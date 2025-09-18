@@ -1,0 +1,68 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Python Pushdown"
+      parameters:
+        componentName: "Start"
+    Python Pushdown:
+      type: "python-pushdown"
+      parameters:
+        componentName: "Python Pushdown"
+        warehouse: "COMPUTE_WH"
+        externalAccessIntegrations:
+        pythonVersion: "3.10"
+        packagesGrid:
+        - - "requests"
+          - "2.32.5"
+        scriptLocation: "Component"
+        pythonScript: "import http.client\nimport json\nimport snowflake.connector\n\
+          \n# ----------------------\n# 🔑 Snowflake Credentials\n# ----------------------\n\
+          SF_USER = \"Siri\"\nSF_PASSWORD = \"Siri@9876543210\"\nSF_ACCOUNT = \"ZCOBBTL-KB02696\"\
+          \            \nSF_WAREHOUSE = \"COMPUTE_WH\"\nSF_DATABASE = \"SIRI_DB\"\n\
+          SF_SCHEMA = \"TEST_SCHEMA\"\nSF_ROLE = \"ACCOUNTADMIN\"\n\n# ----------------------\n\
+          # 🌐 API Details\n# ----------------------\nAPI_HOST = \"api.restful-api.dev\"\
+          \nAPI_PATH = \"/objects\"   # Replace with your API endpoint\n\n# ----------------------\n\
+          # 📥 Fetch API Data\n# ----------------------\ndef fetch_api():\n    \"\"\
+          \"Fetch JSON data from API\"\"\"\n    conn = http.client.HTTPSConnection(API_HOST,\
+          \ timeout=30)\n    conn.request(\"GET\", API_PATH)\n    res = conn.getresponse()\n\
+          \    data = res.read()\n    conn.close()\n    return json.loads(data.decode(\"\
+          utf-8\"))\n\n# ----------------------\n# ⛄ Load into Snowflake\n# ----------------------\n\
+          def load_to_snowflake(records):\n    conn = snowflake.connector.connect(\n\
+          \        user=Siri,\n        password=Siri@9876543210,\n        account=ZCOBBTL-KB02696,\n\
+          \        warehouse=COMPUTE_WAREHOUSE,\n        database=SIRI_DB,\n     \
+          \   schema=TEST_SCHEMA,\n        role=ACCOUNTADMIN,\n        autocommit=True\
+          \ \n    )\n    cursor = conn.cursor()\n\n    # 1. Create target table if\
+          \ not exists\n    cursor.execute(f\"\"\"\n    CREATE TABLE IF NOT EXISTS\
+          \ {SIRI_DB}.{TEST_SCHEMA}.API_DATA (\n        id STRING,\n        name STRING,\n\
+          \        data VARIANT\n    )\n\"\"\")\n\n\n    # 2. Insert records\n   \
+          \ for rec in records:\n        cursor.execute(\"\"\"\n            INSERT\
+          \ INTO API_DATA (id, name, data)\n            VALUES (%s, %s, %s)\n    \
+          \    \"\"\", (\n            str(rec.get(\"id\")),\n            rec.get(\"\
+          name\"),\n            json.dumps(rec.get(\"data\")) if isinstance(rec.get(\"\
+          data\"), dict) else None\n        ))\n\n    conn.commit()\n    cursor.close()\n\
+          \    conn.close()\n    print(f\"✅ Loaded {len(records)} rows into Snowflake.\"\
+          )\n\n# ----------------------\n# 🚀 Main\n# ----------------------\nif __name__\
+          \ == \"__main__\":\n    api_data = fetch_api()\n    \n    # If API returns\
+          \ a single object, wrap in list\n    if isinstance(api_data, dict):\n  \
+          \      api_data = [api_data]\n\n    load_to_snowflake(api_data)\n"
+        scriptTimeout: "360"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    Python Pushdown:
+      position:
+        x: 160
+        "y": 0
+      tempMetlId: 2
