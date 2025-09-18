@@ -1,0 +1,65 @@
+type: "transformation"
+version: "1.0"
+pipeline:
+  components:
+    Calculator:
+      type: "calculator"
+      sources:
+      - "DIM_CUSTOMER"
+      parameters:
+        componentName: "Calculator"
+        includeInputColumns: "Yes"
+        calculations:
+        - - "\"START_DATE\"=\"END_DATE\""
+          - "calculation"
+    DIM_CUSTOMER:
+      type: "table-input"
+      parameters:
+        componentName: "DIM_CUSTOMER"
+        database: "SIRI_DB"
+        schema: "TEST_SCHEMA"
+        targetTable: "DIM_CUSTOMER"
+        columnNames:
+        - "CUSTOMER_ID"
+        - "CUSTOMER_NAME"
+        - "CUSTOMER_ADDRESS"
+        - "START_DATE"
+        - "END_DATE"
+        - "IS_CURRENT"
+        timeOffset:
+    DIM_CUSTOMER 2:
+      type: "table-output"
+      sources:
+      - "Calculator"
+      parameters:
+        componentName: "DIM_CUSTOMER 2"
+        warehouse: "COMPUTE_WH"
+        database: "SIRI_DB"
+        schema: "TEST_SCHEMA"
+        targetTable: "DIM_CUSTOMER"
+        fixDataTypeMismatches: "No"
+        columnMapping:
+        - - "START_DATE"
+          - "END_DATE"
+        orderBy:
+        outputMode: "Append"
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Calculator:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    DIM_CUSTOMER:
+      position:
+        x: -160
+        "y": 0
+      tempMetlId: 2
+    DIM_CUSTOMER 2:
+      position:
+        x: 160
+        "y": 0
+      tempMetlId: 3
