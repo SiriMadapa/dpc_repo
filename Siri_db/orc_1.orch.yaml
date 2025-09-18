@@ -1,0 +1,50 @@
+type: "orchestration"
+version: "1.0"
+pipeline:
+  components:
+    Start:
+      type: "start"
+      transitions:
+        unconditional:
+        - "Create Table"
+      parameters:
+        componentName: "Start"
+    Create Table:
+      type: "create-table-v2"
+      parameters:
+        componentName: "Create Table"
+        createMethod: "Create"
+        database: "SIRI_DB"
+        schema: "TEST_SCHEMA"
+        table: "DIM_ORDERS"
+        snowflakeTableType: "Permanent"
+        columns:
+        - - "ORDER_ID"
+          - "NUMBER"
+          - "30"
+          - ""
+          - ""
+          - "No"
+          - "No"
+          - ""
+          - ""
+        defaultDdlCollation:
+        primaryKeys:
+        clusteringKeys:
+        dataRetentionTimeInDays:
+        comment:
+      postProcessing:
+        updateOutputMessage:
+        updateScalarVariables:
+design:
+  components:
+    Start:
+      position:
+        x: 0
+        "y": 0
+      tempMetlId: 1
+    Create Table:
+      position:
+        x: 160
+        "y": 0
+      tempMetlId: 2
